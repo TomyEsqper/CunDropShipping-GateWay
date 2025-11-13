@@ -1,5 +1,75 @@
-bin/
-obj/
+# General
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# .NET build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Rr]eleases/
+[Pp]ublish/
+TestResults/
+*.coverage
+*.coveragexml
+*.cov
+*.trx
+BenchmarkDotNet.Artifacts/
+
+# Solution and packages
 /packages/
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+nuget.exe
+
+# Rider / JetBrains
+# Asegura ignorar toda carpeta de configuración de JetBrains en la raíz
+/.idea/
+# y cualquier .idea anidado accidentalmente
+.idea/**
 riderModule.iml
 /_ReSharper.Caches/
+_ReSharper*/
+*.iml
+*.sln.iml
+*.DotSettings.user
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ASP.NET Core
+wwwroot/lib/
+wwwroot/dist/
+appsettings.*.local.json
+
+# Node (if used for front-end assets)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage and analysis
+coverage/
+.nyc_output/
+lcov.info
+/.sonarqube/
+sonar-analysis.xml
+
+# Tooling caches
+.fleet/
+.ionide/
+.history/
