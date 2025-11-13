@@ -1,11 +1,12 @@
 using CunDropShipping_Gateway.application.Service;
-using CunDropShipping_Gateway.infrastructure.Entity; 
+using CunDropShipping_Gateway.domain.Entity; // Tu entidad de negocio (Domain)
+using CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity; // Aquí solo debe estar ProductDto
 using Microsoft.AspNetCore.Mvc;
 
 namespace CunDropShipping_Gateway.adapter.restful.v1.Controller
 {
     [ApiController]
-    [Route("api/gateway/v1/products")] // <-- Ruta en plural (es estándar)
+    [Route("api/gateway/v1/products")]
     public class GatewayController : ControllerBase
     {
         private readonly IGatewayService _gatewayService;
@@ -15,69 +16,109 @@ namespace CunDropShipping_Gateway.adapter.restful.v1.Controller
             _gatewayService = gatewayService;
         }
 
-        [HttpGet]
-        public ActionResult<List<ProductResponse>> GetAllProducts()
+        // ==============================================================
+        // 🛠️ MAPPERS (Traductor interno del Controller)
+        // ==============================================================
+        
+        // 1. De Dominio -> DTO (Para responder al cliente)
+        private ProductDto ToDto(Product domain)
         {
-            // OJO: Esto asume que tu IGatewayService devuelve un 'ProductResponse' del adapter
-            // (Lo ideal es que devuelva un 'DomainEntity' y tú lo mapees aquí)
-            var products = _gatewayService.GetAllProducts();
-            return Ok(products);
+            if (domain == null) return null;
+            return new ProductDto
+            {
+                IdProduct = domain.IdProduct,
+                NameProduct = domain.NameProduct,
+                Description = domain.Description,
+                Price = domain.Price,
+                StockQuantity = domain.StockQuantity
+            };
         }
 
-        [HttpGet("{idProduct}")] // <-- El nombre del parámetro DEBE coincidir
-        public ActionResult<ProductResponse> GetProductById(int idProduct)
+        // 2. De DTO -> Dominio (Para enviar al Servicio)
+        private Product ToDomain(ProductDto dto)
+        {
+            return new Product
+            {
+                IdProduct = dto.IdProduct,
+                NameProduct = dto.NameProduct,
+                Description = dto.Description,
+                Price = dto.Price,
+                StockQuantity = dto.StockQuantity
+            };
+        }
+
+        // ==============================================================
+        // 🌐 ENDPOINTS (Todos usan ProductDto)
+        // ==============================================================
+
+        [HttpGet]
+        public ActionResult<List<ProductDto>> GetAllProducts()
+        {
+            var products = _gatewayService.GetAllProducts();
+            // Convertimos la lista de Dominio a DTOs
+            return Ok(products.Select(p => ToDto(p)).ToList());
+        }
+
+        [HttpGet("{idProduct}")]
+        public ActionResult<ProductDto> GetProductById(int idProduct)
         {
             var product = _gatewayService.GetProductById(idProduct);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            return Ok(product);
+            if (product == null) return NotFound();
+            return Ok(ToDto(product));
         }
 
         [HttpPost]
-        public ActionResult<ProductResponse> SaveProduct([FromBody] ProductRequest request)
+        public ActionResult<ProductDto> SaveProduct([FromBody] ProductDto productDto)
         {
-            // Tienes que crear este método 'SaveProduct' en tu IGatewayService
-            var product = _gatewayService.SaveProduct(request); 
-            return CreatedAtAction(nameof(GetProductById), new { idProduct = product.IdProduct }, product);
+            // Convertimos el DTO a Dominio para pasarlo al servicio
+            var domainEntity = ToDomain(productDto);
+            
+            // El servicio devuelve la entidad creada (Dominio)
+            var createdProduct = _gatewayService.SaveProduct(domainEntity);
+            
+            // Convertimos de vuelta a DTO para responder
+            var responseDto = ToDto(createdProduct);
+            
+            return CreatedAtAction(nameof(GetProductById), new { idProduct = responseDto.IdProduct }, responseDto);
         }
 
-        [HttpPut("{idProduct}")] // <-- El nombre del parámetro DEBE coincidir
-        public ActionResult<ProductResponse> UpdateProduct(int idProduct, [FromBody] ProductRequest request)
+        [HttpPut("{idProduct}")]
+        public ActionResult<ProductDto> UpdateProduct(int idProduct, [FromBody] ProductDto productDto)
         {
-            // Tienes que crear este método 'UpdateProduct' en tu IGatewayService
-            var product = _gatewayService.UpdateProduct(idProduct, request);
-            return Ok(product);
+            var domainEntity = ToDomain(productDto);
+            var updatedProduct = _gatewayService.UpdateProduct(idProduct, domainEntity);
+            
+            if (updatedProduct == null) return NotFound();
+            return Ok(ToDto(updatedProduct));
         }
 
-        [HttpDelete("{idProduct}")] // <-- El nombre del parámetro DEBE coincidir
-        public ActionResult<ProductResponse> DeleteProduct(int idProduct)
+        [HttpDelete("{idProduct}")]
+        public ActionResult<ProductDto> DeleteProduct(int idProduct)
         {
-            // Tienes que crear este método 'DeleteProduct' en tu IGatewayService
-            var product = _gatewayService.DeleteProduct(idProduct);
-            return Ok(product);
+            var deletedProduct = _gatewayService.DeleteProduct(idProduct);
+            if (deletedProduct == null) return NotFound();
+            return Ok(ToDto(deletedProduct));
         }
 
-        [HttpGet("search")] // <-- Ruta más limpia
-        public ActionResult<List<ProductResponse>> SearchProductsByName([FromQuery] string searchTerm)
+        [HttpGet("search")]
+        public ActionResult<List<ProductDto>> SearchProductsByName([FromQuery] string searchTerm)
         {
             var products = _gatewayService.SearchProductsByName(searchTerm);
-            return Ok(products);
+            return Ok(products.Select(p => ToDto(p)).ToList());
         }
 
         [HttpGet("filter/price")]
-        public ActionResult<List<ProductResponse>> GetProductsByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal max)
+        public ActionResult<List<ProductDto>> GetProductsByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal max)
         {
             var products = _gatewayService.GetProductsByPriceRange(minPrice, max);
-            return Ok(products);
+            return Ok(products.Select(p => ToDto(p)).ToList());
         }
 
         [HttpGet("filter/stock")]
-        public ActionResult<List<ProductResponse>> GetProductsWithLowStock([FromQuery] int stockThreshold)
+        public ActionResult<List<ProductDto>> GetProductsWithLowStock([FromQuery] int stockThreshold)
         {
             var products = _gatewayService.GetProductsWithLowStock(stockThreshold);
-            return Ok(products);
+            return Ok(products.Select(p => ToDto(p)).ToList());
         }
     }
 }

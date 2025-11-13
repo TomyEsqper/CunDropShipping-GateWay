@@ -5,8 +5,8 @@ namespace CunDropShipping_Gateway.infrastructure.Entity;
 public class ProductResponse
 {
     public int IdProduct { get; set; }
-    public string nameProduct { get; set; }
+    public string NameProduct { get; set; }
     public string Description { get; set; }
-    public decimal price { get; set; }
-    public int stockQuantity { get; set; }
+    public decimal Price { get; set; }
+    public int StockQuantity { get; set; }
 }

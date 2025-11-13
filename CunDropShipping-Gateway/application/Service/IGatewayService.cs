@@ -1,16 +1,19 @@
+using CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity;
+using CunDropShipping_Gateway.domain.Entity;
 using CunDropShipping_Gateway.infrastructure.Entity;
+using ProductResponse = CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity;
 
 namespace CunDropShipping_Gateway.application.Service
 {
     public interface IGatewayService
     {
-        List<ProductResponse> GetAllProducts();
-        ProductResponse GetProductById(int idProduct);
-        ProductResponse SaveProduct(ProductRequest request);
-        ProductResponse UpdateProduct(int idProduct, ProductRequest request);
-        ProductResponse DeleteProduct(int idProduct);
-        List<ProductResponse> SearchProductsByName(string searchTerm);
-        List<ProductResponse> GetProductsByPriceRange(decimal minPrice, decimal maxPrice);
-        List<ProductResponse> GetProductsWithLowStock(int stockThreshold);
+        List<Product> GetAllProducts();
+        Product GetProductById(int idProduct);
+        Product SaveProduct(Product request);
+        Product UpdateProduct(int idProduct, Product request);
+        Product DeleteProduct(int idProduct);
+        List<Product> SearchProductsByName(string searchTerm);
+        List<Product> GetProductsByPriceRange(decimal minPrice, decimal maxPrice);
+        List<Product> GetProductsWithLowStock(int stockThreshold);
     }
 }

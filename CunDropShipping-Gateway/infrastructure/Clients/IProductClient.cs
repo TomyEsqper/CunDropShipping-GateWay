@@ -1,15 +1,25 @@
-using CunDropShipping_Gateway.infrastructure.Entity;
+using CunDropShipping_Gateway.infrastructure.Entity; // Único using necesario
 
-namespace CunDropShipping_Gateway.infrastructure.Clients;
-
-public interface IProductClient
+namespace CunDropShipping_Gateway.infrastructure.Clients
 {
-    List<ProductResponse> GetAllProducts();
-    ProductResponse GetProductById(int idProduct);
-    ProductResponse SaveProduct(ProductRequest request);
-    ProductResponse UpdateProduct(int idProduct, ProductRequest request);
-    ProductResponse DeleteProduct(int idProduct);
-    List<ProductResponse> SearchProductsByName(string searchTerm);
-    List<ProductResponse> GetProductsByPriceRange(decimal minPrice, decimal maxPrice);
-    List<ProductResponse> GetProductsWithLowStock(int stockThreshold);
+    public interface IProductClient
+    {
+        List<ProductResponse> GetAllProducts();
+        
+        ProductResponse GetProductById(int idProduct);
+        
+        // ✅ CORREGIDO: Usamos ProductResponse como entrada también
+        ProductResponse SaveProduct(ProductResponse product);
+        
+        // ✅ CORREGIDO: Usamos ProductResponse como entrada también
+        ProductResponse UpdateProduct(int idProduct, ProductResponse product);
+        
+        ProductResponse DeleteProduct(int idProduct);
+        
+        List<ProductResponse> SearchProductsByName(string searchTerm);
+        
+        List<ProductResponse> GetProductsByPriceRange(decimal minPrice, decimal maxPrice);
+        
+        List<ProductResponse> GetProductsWithLowStock(int stockThreshold);
+    }
 }
