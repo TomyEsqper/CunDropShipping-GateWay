@@ -1,0 +1,6 @@
+@CunDropShipping_Gateway_HostAddress = http://localhost:5209
+
+GET {{CunDropShipping_Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
