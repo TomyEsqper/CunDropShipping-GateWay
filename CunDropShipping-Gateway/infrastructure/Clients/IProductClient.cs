@@ -5,21 +5,12 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
     public interface IProductClient
     {
         List<ProductResponse> GetAllProducts();
-        
         ProductResponse GetProductById(int idProduct);
-        
-        // ✅ CORREGIDO: Usamos ProductResponse como entrada también
         ProductResponse SaveProduct(ProductResponse product);
-        
-        // ✅ CORREGIDO: Usamos ProductResponse como entrada también
         ProductResponse UpdateProduct(int idProduct, ProductResponse product);
-        
         ProductResponse DeleteProduct(int idProduct);
-        
         List<ProductResponse> SearchProductsByName(string searchTerm);
-        
         List<ProductResponse> GetProductsByPriceRange(decimal minPrice, decimal maxPrice);
-        
         List<ProductResponse> GetProductsWithLowStock(int stockThreshold);
     }
 }

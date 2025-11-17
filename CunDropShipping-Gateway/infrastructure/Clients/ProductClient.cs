@@ -20,7 +20,6 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
 
         public List<ProductResponse> GetAllProducts()
         {
-            // .Result bloquea el hilo, idealmente usa async/await, pero lo dejo como lo tienes
             var response = _httpClient
                 .GetFromJsonAsync<List<ProductResponse>>("/api/v1/products", _jsonOptions)
                 .Result;
