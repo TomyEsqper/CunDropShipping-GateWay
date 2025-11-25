@@ -32,6 +32,13 @@ public class CategoryClient : ICategoryClient
         return response ?? new List<CategoryResponse>();
     }
 
+    public CategoryResponse? GetCategoryById(int id)
+    {
+        var response = _httpClient.GetFromJsonAsync<CategoryResponse>($"/api/v1/categories/{id}", _jsonOptions)
+            .Result;
+        return response;
+    }
+
     public CategoryResponse CreateCategory(CategoryResponse category)
     {
         var response = _httpClient.PostAsJsonAsync("/api/v1/categories", category).Result;

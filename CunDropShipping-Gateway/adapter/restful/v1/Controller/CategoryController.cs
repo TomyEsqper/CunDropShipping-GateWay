@@ -34,6 +34,14 @@ public class CategoryController : ControllerBase
         return Ok(_mapper.ToEntityList(domainList));
     }
 
+    [HttpGet("{id}")]
+    public ActionResult<CategoryDto> GetCategoryById(int id)
+    {
+        var domain = _service.GetCategoryById(id);
+        if (domain == null) return NotFound();
+        return Ok(_mapper.ToEntity(domain));
+    }
+
     [HttpPost]
     public ActionResult<CategoryDto> CreateCategory([FromBody] CategoryDto dto)
     {

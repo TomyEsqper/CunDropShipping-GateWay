@@ -6,6 +6,13 @@ namespace CunDropShipping_Gateway.infrastructure.Mapper;
 
 public class ProductInfrastructureMapper : IMapper<DomainProductEntity, ProductResponse>
 {
+    private readonly IMapper<DomainCategoryEntity, CategoryResponse> _categoryMapper;
+
+    public ProductInfrastructureMapper(IMapper<DomainCategoryEntity, CategoryResponse> categoryMapper)
+    {
+        _categoryMapper = categoryMapper;
+    }
+
     public DomainProductEntity ToDomain(ProductResponse entity)
     {
         if (entity == null) return null;
@@ -15,7 +22,9 @@ public class ProductInfrastructureMapper : IMapper<DomainProductEntity, ProductR
             NameProduct = entity.NameProduct,
             Description = entity.Description,
             Price = entity.Price,
-            StockQuantity = entity.StockQuantity
+            StockQuantity = entity.StockQuantity,
+            IdCategory =  entity.IdCategory,
+            Category = entity.Category != null ? _categoryMapper.ToDomain(entity.Category) : null
         };
     }
 
@@ -28,7 +37,9 @@ public class ProductInfrastructureMapper : IMapper<DomainProductEntity, ProductR
             NameProduct = domain.NameProduct,
             Description = domain.Description,
             Price = domain.Price,
-            StockQuantity = domain.StockQuantity
+            StockQuantity = domain.StockQuantity,
+            IdCategory = domain.IdCategory,
+            Category = domain.Category != null ? _categoryMapper.ToEntity(domain.Category) : null
         };
     }
 

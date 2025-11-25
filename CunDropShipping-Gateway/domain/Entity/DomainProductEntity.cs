@@ -9,6 +9,8 @@ namespace CunDropShipping_Gateway.domain.Entity
         public string Description { get; set; }
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
-        // Aquí puedes agregar lógica de negocio en el futuro
+        
+        public int IdCategory { get; set; }
+        public DomainCategoryEntity? Category { get; set; }
     }
 }

@@ -10,6 +10,12 @@ namespace CunDropShipping_Gateway.adapter.restful.v1.Controller.Mapper
     /// </summary>
     public class ProductAdapterMapper : IMapper<DomainProductEntity, ProductDto>
     {
+        private readonly IMapper<DomainCategoryEntity, CategoryDto> _categoryMapper;
+        public ProductAdapterMapper(IMapper<DomainCategoryEntity, CategoryDto> categoryMapper)
+        {
+            _categoryMapper = categoryMapper;
+        }
+        
         // 1. Mapeo Individual: Dominio -> DTO (Usado para las respuestas HTTP)
         public ProductDto ToEntity(DomainProductEntity domain)
         {
@@ -21,7 +27,11 @@ namespace CunDropShipping_Gateway.adapter.restful.v1.Controller.Mapper
                 NameProduct = domain.NameProduct,
                 Description = domain.Description,
                 Price = domain.Price,
-                StockQuantity = domain.StockQuantity
+                StockQuantity = domain.StockQuantity,
+                IdCategory = domain.IdCategory,
+                Category = domain.Category != null
+                    ? _categoryMapper.ToEntity(domain.Category)
+                    : null
             };
         }
 
@@ -36,7 +46,9 @@ namespace CunDropShipping_Gateway.adapter.restful.v1.Controller.Mapper
                 NameProduct = entity.NameProduct,
                 Description = entity.Description,
                 Price = entity.Price,
-                StockQuantity = entity.StockQuantity
+                StockQuantity = entity.StockQuantity,
+                IdCategory = entity.IdCategory,
+                Category = null
             };
         }
 
