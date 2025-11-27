@@ -1,48 +1,80 @@
 using CunDropShipping_Gateway.application.Service;
 using CunDropShipping_Gateway.domain.Entity; 
 using CunDropShipping_Gateway.infrastructure.Clients; 
-using CunDropShipping_Gateway.application.Common; 
-using Product = CunDropShipping_Gateway.domain.Entity; 
-using ProductResponse = CunDropShipping_Gateway.infrastructure.Entity.ProductResponse; 
+using CunDropShipping_Gateway.application.Common;
+using CunDropShipping_Gateway.infrastructure.Entity;
+using System.Linq;
 
 namespace CunDropShipping_Gateway.domain
 {
     public class ProductServiceImp : IProductService
     {
-        private readonly IProductClient _client;
+        private readonly IProductClient _productClient;
         private readonly IMapper<DomainProductEntity, ProductResponse> _mapper; 
-
-        public ProductServiceImp(IProductClient productClient, IMapper<DomainProductEntity, ProductResponse> infraMapper)
+        private readonly ICategoryClient _categoryClient;
+        private readonly IMapper<DomainCategoryEntity, CategoryResponse> _categoryInfraMapper;
+        private readonly IDomainValidatorService _validator;
+        
+        public ProductServiceImp(IProductClient productClient, 
+                                 IMapper<DomainProductEntity, ProductResponse> infraMapper,
+                                 ICategoryClient categoryClient,
+                                 IMapper<DomainCategoryEntity, CategoryResponse> categoryInfraMapper,
+                                 IDomainValidatorService validator)
         {
-            _client = productClient;
+            _productClient = productClient;
             _mapper = infraMapper;
+            _categoryClient = categoryClient;
+            _categoryInfraMapper = categoryInfraMapper;
+            _validator = validator;
+
         }
+        
 
-        // ==============================================================\n
-        // ❌ MAPPERS INTERNOS ELIMINADOS: MapToDomain y MapToInfra
-        // ==============================================================\n
-
-        public List<DomainProductEntity> GetAllProducts()
+        public DomainProductEntity EnrichProductWithCategory(DomainProductEntity product)
         {
-            var infraProducts = _client.GetAllProducts();
-            // ✅ Usamos el mapper genérico: ToDomainList
-            return _mapper.ToDomainList(infraProducts);
+            if (product == null || product.IdCategory <= 0) return product;
+
+            try
+            {
+                var infraCategory = _categoryClient.GetCategoryById(product.IdCategory);
+                if (infraCategory != null)
+                {
+                    var domainCategory = _categoryInfraMapper.ToDomain(infraCategory);
+                    product.Category = domainCategory;
+                }
+            }
+            catch (Exception ex)
+            {
+                // En caso de fallo de red o 404/500, no rompemos el producto, solo dejamos la categoría nula.
+            }
+            return product;
+        }
+        public List<DomainProductEntity> GetAllProducts()    
+        {
+            var infraProducts = _productClient.GetAllProducts();
+            var domainProducts = _mapper.ToDomainList(infraProducts);
+            
+            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList(); 
         }
 
         public DomainProductEntity GetProductById(int idProduct)
         {
-            var infraProduct = _client.GetProductById(idProduct);
-            // ✅ Usamos el mapper genérico: ToDomain
-            return _mapper.ToDomain(infraProduct);
+            var infraProduct = _productClient.GetProductById(idProduct);
+            if (infraProduct == null) return null;
+
+            var domainProduct = _mapper.ToDomain(infraProduct);
+
+            return EnrichProductWithCategory(domainProduct);
         }
 
         public DomainProductEntity SaveProduct(DomainProductEntity domainRequest)
         {
+            _validator.ValidateCategoryExists(domainRequest.IdCategory);
             // 1. Domain -> Infra: Usamos el mapper genérico: ToEntity
             var infraRequest = _mapper.ToEntity(domainRequest);
 
             // 2. Llamamos al Cliente
-            var infraResponse = _client.SaveProduct(infraRequest);
+            var infraResponse = _productClient.SaveProduct(infraRequest);
 
             // 3. Convertimos Infra -> Domain: Usamos el mapper genérico: ToDomain
             return _mapper.ToDomain(infraResponse);
@@ -50,35 +82,42 @@ namespace CunDropShipping_Gateway.domain
 
         public DomainProductEntity UpdateProduct(int idProduct, DomainProductEntity domainRequest)
         {
+            _validator.ValidateCategoryExists(domainRequest.IdCategory);
             var infraRequest = _mapper.ToEntity(domainRequest);
 
-            var infraResponse = _client.UpdateProduct(idProduct, infraRequest);
+            var infraResponse = _productClient.UpdateProduct(idProduct, infraRequest);
 
             return _mapper.ToDomain(infraResponse);
         }
 
         public DomainProductEntity DeleteProduct(int idProduct)
         {
-            var infraResponse = _client.DeleteProduct(idProduct);
+            var infraResponse = _productClient.DeleteProduct(idProduct);
             return _mapper.ToDomain(infraResponse);
         }
 
         public List<DomainProductEntity> SearchProductsByName(string searchTerm)
         {
-            var infraProducts = _client.SearchProductsByName(searchTerm);
-            return _mapper.ToDomainList(infraProducts);
+            var infraProducts = _productClient.SearchProductsByName(searchTerm);
+            var domainProducts = _mapper.ToDomainList(infraProducts);
+
+            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList();
         }
 
         public List<DomainProductEntity> GetProductsByPriceRange(decimal minPrice, decimal maxPrice)
         {
-            var infraProducts = _client.GetProductsByPriceRange(minPrice, maxPrice);
-            return _mapper.ToDomainList(infraProducts);
+            var infraProducts = _productClient.GetProductsByPriceRange(minPrice, maxPrice);
+            var domainProducts = _mapper.ToDomainList(infraProducts);
+
+            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList();
         }
 
         public List<DomainProductEntity> GetProductsWithLowStock(int stockThreshold)
         {
-            var infraProducts = _client.GetProductsWithLowStock(stockThreshold);
-            return _mapper.ToDomainList(infraProducts);
+            var infraProducts = _productClient.GetProductsWithLowStock(stockThreshold);
+            var domainProducts = _mapper.ToDomainList(infraProducts);
+           
+            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList();
         }
     }
 }

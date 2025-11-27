@@ -5,6 +5,7 @@ public interface ICategoryClient
 {
     List<CategoryResponse> GetAllCategories();
     List<CategoryResponse>? GetCategoriesByName(string name);
+    CategoryResponse? GetCategoryById(int id);
     CategoryResponse CreateCategory(CategoryResponse category);
     CategoryResponse? UpdateCategory(int id, CategoryResponse category);
     CategoryResponse? DeleteCategoryById(int id);
