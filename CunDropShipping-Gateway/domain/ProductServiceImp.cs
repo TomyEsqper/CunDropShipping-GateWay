@@ -13,16 +13,19 @@ namespace CunDropShipping_Gateway.domain
         private readonly IMapper<DomainProductEntity, ProductResponse> _mapper; 
         private readonly ICategoryClient _categoryClient;
         private readonly IMapper<DomainCategoryEntity, CategoryResponse> _categoryInfraMapper;
+        private readonly IDomainValidatorService _validator;
         
         public ProductServiceImp(IProductClient productClient, 
                                  IMapper<DomainProductEntity, ProductResponse> infraMapper,
                                  ICategoryClient categoryClient,
-                                 IMapper<DomainCategoryEntity, CategoryResponse> categoryInfraMapper)
+                                 IMapper<DomainCategoryEntity, CategoryResponse> categoryInfraMapper,
+                                 IDomainValidatorService validator)
         {
             _productClient = productClient;
             _mapper = infraMapper;
             _categoryClient = categoryClient;
             _categoryInfraMapper = categoryInfraMapper;
+            _validator = validator;
 
         }
         
@@ -66,6 +69,7 @@ namespace CunDropShipping_Gateway.domain
 
         public DomainProductEntity SaveProduct(DomainProductEntity domainRequest)
         {
+            _validator.ValidateCategoryExists(domainRequest.IdCategory);
             // 1. Domain -> Infra: Usamos el mapper genérico: ToEntity
             var infraRequest = _mapper.ToEntity(domainRequest);
 
@@ -78,6 +82,7 @@ namespace CunDropShipping_Gateway.domain
 
         public DomainProductEntity UpdateProduct(int idProduct, DomainProductEntity domainRequest)
         {
+            _validator.ValidateCategoryExists(domainRequest.IdCategory);
             var infraRequest = _mapper.ToEntity(domainRequest);
 
             var infraResponse = _productClient.UpdateProduct(idProduct, infraRequest);

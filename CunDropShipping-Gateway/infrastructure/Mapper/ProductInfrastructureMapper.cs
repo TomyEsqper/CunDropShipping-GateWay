@@ -23,8 +23,7 @@ public class ProductInfrastructureMapper : IMapper<DomainProductEntity, ProductR
             Description = entity.Description,
             Price = entity.Price,
             StockQuantity = entity.StockQuantity,
-            IdCategory =  entity.IdCategory,
-            Category = entity.Category != null ? _categoryMapper.ToDomain(entity.Category) : null
+            IdCategory =  entity.IdCategory
         };
     }
 
@@ -38,8 +37,7 @@ public class ProductInfrastructureMapper : IMapper<DomainProductEntity, ProductR
             Description = domain.Description,
             Price = domain.Price,
             StockQuantity = domain.StockQuantity,
-            IdCategory = domain.IdCategory,
-            Category = domain.Category != null ? _categoryMapper.ToEntity(domain.Category) : null
+            IdCategory = domain.IdCategory
         };
     }
 

@@ -48,6 +48,7 @@ builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
 
 builder.Services.AddScoped<IProductService, ProductServiceImp>(); 
 builder.Services.AddScoped<ICategoryService, CategoryServiceImp>();
+builder.Services.AddScoped<IDomainValidatorService, DomainValidatorService>();
 
 // ==============================================================
 // 4. MAPPERS (TRADUCTORES GENÉRICOS: IMapper<TIn, TOut>)
