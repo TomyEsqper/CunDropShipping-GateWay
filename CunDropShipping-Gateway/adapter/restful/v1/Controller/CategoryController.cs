@@ -20,58 +20,59 @@ public class CategoryController : ControllerBase
     }
     
     [HttpGet]
-    public ActionResult<List<CategoryDto>> GetAllCategories()
+    public async Task<ActionResult<List<CategoryDto>>> GetAllCategories()
     {
-        var domainList = _service.GetAllCategories();
+        // [EDUCATIVO] El controlador espera (await) a que el servicio le dé los datos.
+        var domainList = await _service.GetAllCategories();
         return Ok(_mapper.ToEntityList(domainList));
     }
     
     [HttpGet("Search")]
-    public ActionResult<List<CategoryDto>> SearchCategoriesByName([FromQuery] string name)
+    public async Task<ActionResult<List<CategoryDto>>> SearchCategoriesByName([FromQuery] string name)
     {
-        var domainList = _service.GetCategoriesByName(name);
+        var domainList = await _service.GetCategoriesByName(name);
         if (domainList == null) return NotFound();
         return Ok(_mapper.ToEntityList(domainList));
     }
 
     [HttpGet("{id}")]
-    public ActionResult<CategoryDto> GetCategoryById(int id)
+    public async Task<ActionResult<CategoryDto>> GetCategoryById(int id)
     {
-        var domain = _service.GetCategoryById(id);
+        var domain = await _service.GetCategoryById(id);
         if (domain == null) return NotFound();
         return Ok(_mapper.ToEntity(domain));
     }
 
     [HttpPost]
-    public ActionResult<CategoryDto> CreateCategory([FromBody] CategoryDto dto)
+    public async Task<ActionResult<CategoryDto>> CreateCategory([FromBody] CategoryDto dto)
     {
         var domainEntity = _mapper.ToDomain(dto);
-        var createdDomain = _service.CreateCategory(domainEntity);
+        var createdDomain = await _service.CreateCategory(domainEntity);
         var responseDto = _mapper.ToEntity(createdDomain);
         return Ok(responseDto);
     }
 
     [HttpPut("{id}")]
-    public ActionResult<CategoryDto> UpdateCategory(int id, [FromBody] CategoryDto dto)
+    public async Task<ActionResult<CategoryDto>> UpdateCategory(int id, [FromBody] CategoryDto dto)
     {
         var domainRequest = _mapper.ToDomain(dto);
-        var updatedDomain = _service.UpdateCategory(id, domainRequest);
+        var updatedDomain = await _service.UpdateCategory(id, domainRequest);
         if (updatedDomain == null) return NotFound();
         return Ok(_mapper.ToEntity(updatedDomain));
     }
     
     [HttpDelete("{id}")]
-    public ActionResult<CategoryDto> DeleteCategoryById(int id)
+    public async Task<ActionResult<CategoryDto>> DeleteCategoryById(int id)
     {
-        var deletedDomain = _service.DeleteCategoryById(id);
+        var deletedDomain = await _service.DeleteCategoryById(id);
         if (deletedDomain == null) return NotFound();
         return Ok(_mapper.ToEntity(deletedDomain));
     }
     
     [HttpDelete("Search")]
-    public ActionResult<List<CategoryDto>> DeleteCategoryByName([FromQuery] string name)
+    public async Task<ActionResult<List<CategoryDto>>> DeleteCategoryByName([FromQuery] string name)
     {
-        var deletedDomainList = _service.DeleteCategoryByName(name);
+        var deletedDomainList = await _service.DeleteCategoryByName(name);
         if (deletedDomainList == null) return NotFound();
         return Ok(_mapper.ToEntityList(deletedDomainList));
     }

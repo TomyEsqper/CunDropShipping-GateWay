@@ -29,14 +29,16 @@ namespace CunDropShipping_Gateway.domain
 
         }
         
-
-        public DomainProductEntity EnrichProductWithCategory(DomainProductEntity product)
+        // [EDUCATIVO] CAMBIO IMPORTANTE: Ahora este método es 'async Task<...>'
+        // porque _categoryClient.GetCategoryById ahora devuelve una Task.
+        public async Task<DomainProductEntity> EnrichProductWithCategory(DomainProductEntity product)
         {
             if (product == null || product.IdCategory <= 0) return product;
 
             try
             {
-                var infraCategory = _categoryClient.GetCategoryById(product.IdCategory);
+                // [EDUCATIVO] Usamos 'await' aquí. Ahora no bloqueamos mientras buscamos la categoría.
+                var infraCategory = await _categoryClient.GetCategoryById(product.IdCategory);
                 if (infraCategory != null)
                 {
                     var domainCategory = _categoryInfraMapper.ToDomain(infraCategory);
@@ -49,75 +51,92 @@ namespace CunDropShipping_Gateway.domain
             }
             return product;
         }
-        public List<DomainProductEntity> GetAllProducts()    
+
+        public async Task<List<DomainProductEntity>> GetAllProducts()    
         {
-            var infraProducts = _productClient.GetAllProducts();
+            var infraProducts = await _productClient.GetAllProducts();
+            
             var domainProducts = _mapper.ToDomainList(infraProducts);
             
-            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList(); 
+            // [EDUCATIVO] Como EnrichProductWithCategory ahora es async, Select normal no funciona bien con await.
+            // Tenemos que esperar todas las tareas.
+            // Usamos Task.WhenAll para lanzar todas las peticiones de enriquecimiento en paralelo.
+            var tasks = domainProducts.Select(p => EnrichProductWithCategory(p));
+            var results = await Task.WhenAll(tasks);
+            
+            return results.ToList();
         }
 
-        public DomainProductEntity GetProductById(int idProduct)
+        public async Task<DomainProductEntity> GetProductById(int idProduct)
         {
-            var infraProduct = _productClient.GetProductById(idProduct);
+            var infraProduct = await _productClient.GetProductById(idProduct);
+            
             if (infraProduct == null) return null;
 
             var domainProduct = _mapper.ToDomain(infraProduct);
 
-            return EnrichProductWithCategory(domainProduct);
+            // [EDUCATIVO] Usamos await aquí también
+            return await EnrichProductWithCategory(domainProduct);
         }
 
-        public DomainProductEntity SaveProduct(DomainProductEntity domainRequest)
+        public async Task<DomainProductEntity> SaveProduct(DomainProductEntity domainRequest)
         {
             _validator.ValidateCategoryExists(domainRequest.IdCategory);
-            // 1. Domain -> Infra: Usamos el mapper genérico: ToEntity
+            
             var infraRequest = _mapper.ToEntity(domainRequest);
 
-            // 2. Llamamos al Cliente
-            var infraResponse = _productClient.SaveProduct(infraRequest);
+            var infraResponse = await _productClient.SaveProduct(infraRequest);
 
-            // 3. Convertimos Infra -> Domain: Usamos el mapper genérico: ToDomain
             return _mapper.ToDomain(infraResponse);
         }
 
-        public DomainProductEntity UpdateProduct(int idProduct, DomainProductEntity domainRequest)
+        public async Task<DomainProductEntity> UpdateProduct(int idProduct, DomainProductEntity domainRequest)
         {
             _validator.ValidateCategoryExists(domainRequest.IdCategory);
             var infraRequest = _mapper.ToEntity(domainRequest);
 
-            var infraResponse = _productClient.UpdateProduct(idProduct, infraRequest);
+            var infraResponse = await _productClient.UpdateProduct(idProduct, infraRequest);
 
             return _mapper.ToDomain(infraResponse);
         }
 
-        public DomainProductEntity DeleteProduct(int idProduct)
+        public async Task<DomainProductEntity> DeleteProduct(int idProduct)
         {
-            var infraResponse = _productClient.DeleteProduct(idProduct);
+            var infraResponse = await _productClient.DeleteProduct(idProduct);
             return _mapper.ToDomain(infraResponse);
         }
 
-        public List<DomainProductEntity> SearchProductsByName(string searchTerm)
+        public async Task<List<DomainProductEntity>> SearchProductsByName(string searchTerm)
         {
-            var infraProducts = _productClient.SearchProductsByName(searchTerm);
+            var infraProducts = await _productClient.SearchProductsByName(searchTerm);
             var domainProducts = _mapper.ToDomainList(infraProducts);
 
-            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList();
+            var tasks = domainProducts.Select(p => EnrichProductWithCategory(p));
+            var results = await Task.WhenAll(tasks);
+            
+            return results.ToList();
         }
 
-        public List<DomainProductEntity> GetProductsByPriceRange(decimal minPrice, decimal maxPrice)
+        public async Task<List<DomainProductEntity>> GetProductsByPriceRange(decimal minPrice, decimal maxPrice)
         {
-            var infraProducts = _productClient.GetProductsByPriceRange(minPrice, maxPrice);
+            var infraProducts = await _productClient.GetProductsByPriceRange(minPrice, maxPrice);
             var domainProducts = _mapper.ToDomainList(infraProducts);
 
-            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList();
+            var tasks = domainProducts.Select(p => EnrichProductWithCategory(p));
+            var results = await Task.WhenAll(tasks);
+            
+            return results.ToList();
         }
 
-        public List<DomainProductEntity> GetProductsWithLowStock(int stockThreshold)
+        public async Task<List<DomainProductEntity>> GetProductsWithLowStock(int stockThreshold)
         {
-            var infraProducts = _productClient.GetProductsWithLowStock(stockThreshold);
+            var infraProducts = await _productClient.GetProductsWithLowStock(stockThreshold);
             var domainProducts = _mapper.ToDomainList(infraProducts);
            
-            return domainProducts.Select(p => EnrichProductWithCategory(p)).ToList();
+            var tasks = domainProducts.Select(p => EnrichProductWithCategory(p));
+            var results = await Task.WhenAll(tasks);
+            
+            return results.ToList();
         }
     }
 }
