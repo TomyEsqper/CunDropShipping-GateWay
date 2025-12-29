@@ -45,7 +45,7 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
             }
         }
 
-        public async Task<ProductResponse> GetProductById(int idProduct)
+        public async Task<ProductResponse?> GetProductById(int idProduct)
         {
             // [EDUCATIVO] GetFromJsonAsync es una joya: hace el Get, valida el status, lee el body
             // y deserializa, todo optimizado y asíncrono. ¡Mucho más limpio!
@@ -55,7 +55,7 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
             return response;
         }
 
-        public async Task<ProductResponse> SaveProduct(ProductResponse product)
+        public async Task<ProductResponse?> SaveProduct(ProductResponse product)
         {
             // [EDUCATIVO] PostAsJsonAsync envía el objeto serializado de forma asíncrona.
             var response = await _httpClient.PostAsJsonAsync("/api/v1/products", product);
@@ -66,7 +66,7 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
             return await response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions);
         }
 
-        public async Task<ProductResponse> UpdateProduct(int idProduct, ProductResponse product)
+        public async Task<ProductResponse?> UpdateProduct(int idProduct, ProductResponse product)
         {
             var response = await _httpClient.PutAsJsonAsync($"/api/v1/products/{idProduct}", product);
             
@@ -75,7 +75,7 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
             return await response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions);
         }
 
-        public async Task<ProductResponse> DeleteProduct(int idProduct)
+        public async Task<ProductResponse?> DeleteProduct(int idProduct)
         {
             var response = await _httpClient.DeleteAsync($"/api/v1/products/{idProduct}");
             

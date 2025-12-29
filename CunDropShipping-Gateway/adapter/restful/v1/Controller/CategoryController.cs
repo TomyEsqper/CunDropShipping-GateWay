@@ -48,6 +48,9 @@ public class CategoryController : ControllerBase
     {
         var domainEntity = _mapper.ToDomain(dto);
         var createdDomain = await _service.CreateCategory(domainEntity);
+        
+        if (createdDomain == null) return BadRequest("Could not create category");
+
         var responseDto = _mapper.ToEntity(createdDomain);
         return Ok(responseDto);
     }

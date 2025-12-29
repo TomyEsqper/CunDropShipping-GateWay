@@ -28,14 +28,13 @@ public class CategoryClient : ICategoryClient
         return response ?? new List<CategoryResponse>();
     }
 
-    public async Task<CategoryResponse> GetCategoryById(int id)
+    public async Task<CategoryResponse?> GetCategoryById(int id)
     {
-        // [EDUCATIVO] Si el API devuelve 404, GetFromJsonAsync lanza excepción.
-        // Manejaremos excepciones globalmente o con try-catch si es necesario.
-        return await _httpClient.GetFromJsonAsync<CategoryResponse>($"/api/v1/categories/{id}", _jsonOptions);
+        var response = await _httpClient.GetFromJsonAsync<CategoryResponse>($"/api/v1/categories/{id}", _jsonOptions);
+        return response;
     }
 
-    public async Task<CategoryResponse> CreateCategory(CategoryResponse category)
+    public async Task<CategoryResponse?> CreateCategory(CategoryResponse category)
     {
         var response = await _httpClient.PostAsJsonAsync("/api/v1/categories", category);
         
@@ -44,7 +43,7 @@ public class CategoryClient : ICategoryClient
         return await response.Content.ReadFromJsonAsync<CategoryResponse>(_jsonOptions);
     }
 
-    public async Task<CategoryResponse> UpdateCategory(int id, CategoryResponse category)
+    public async Task<CategoryResponse?> UpdateCategory(int id, CategoryResponse category)
     {
         var response = await _httpClient.PutAsJsonAsync($"/api/v1/categories/{id}", category);
         
@@ -53,9 +52,9 @@ public class CategoryClient : ICategoryClient
         return await response.Content.ReadFromJsonAsync<CategoryResponse>(_jsonOptions);
     }
 
-    public async Task<CategoryResponse> DeleteCategoryById(int id)
+    public async Task<CategoryResponse?> DeleteCategoryById(int id)
     {
-        var response = await _httpClient.DeleteAsync($"/api/v1/Categories/{id}");
+        var response = await _httpClient.DeleteAsync($"/api/v1/categories/{id}");
         
         response.EnsureSuccessStatusCode();
         

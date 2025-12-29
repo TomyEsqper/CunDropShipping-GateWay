@@ -35,7 +35,7 @@ namespace CunDropShipping_Gateway.domain
             return _mapper.ToDomainList(infraList);
         }
 
-        public async Task<DomainCategoryEntity> GetCategoryById(int id)
+        public async Task<DomainCategoryEntity?> GetCategoryById(int id)
         {
             try 
             {
@@ -49,22 +49,25 @@ namespace CunDropShipping_Gateway.domain
             }
         }
 
-        public async Task<DomainCategoryEntity> CreateCategory(DomainCategoryEntity category)
+        public async Task<DomainCategoryEntity?> CreateCategory(DomainCategoryEntity category)
         {
             var infraRequest = _mapper.ToEntity(category);
             
             var infraResponse = await _client.CreateCategory(infraRequest);
 
+            if (infraResponse == null) return null;
+
             return _mapper.ToDomain(infraResponse);
         }
 
-        public async Task<DomainCategoryEntity> UpdateCategory(int id, DomainCategoryEntity category)
+        public async Task<DomainCategoryEntity?> UpdateCategory(int id, DomainCategoryEntity category)
         {
             var infraRequest = _mapper.ToEntity(category);
             
             try 
             {
                 var infraResponse = await _client.UpdateCategory(id, infraRequest);
+                if (infraResponse == null) return null;
                 return _mapper.ToDomain(infraResponse);
             }
             catch(Exception)
@@ -73,11 +76,12 @@ namespace CunDropShipping_Gateway.domain
             }
         }
 
-        public async Task<DomainCategoryEntity> DeleteCategoryById(int id)
+        public async Task<DomainCategoryEntity?> DeleteCategoryById(int id)
         {
             try
             {
                 var infraResponse = await _client.DeleteCategoryById(id);
+                if (infraResponse == null) return null;
                 return _mapper.ToDomain(infraResponse);
             }
             catch(Exception)

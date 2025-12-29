@@ -10,13 +10,13 @@ public interface ICategoryClient
     
     Task<List<CategoryResponse>> GetCategoriesByName(string name);
     
-    Task<CategoryResponse> GetCategoryById(int id);
+    Task<CategoryResponse?> GetCategoryById(int id);
     
-    Task<CategoryResponse> CreateCategory(CategoryResponse category);
+    Task<CategoryResponse?> CreateCategory(CategoryResponse category);
     
-    Task<CategoryResponse> UpdateCategory(int id, CategoryResponse category);
+    Task<CategoryResponse?> UpdateCategory(int id, CategoryResponse category);
     
-    Task<CategoryResponse> DeleteCategoryById(int id);
+    Task<CategoryResponse?> DeleteCategoryById(int id);
     
     Task<List<CategoryResponse>> DeleteCategoryByName(string name);
 }

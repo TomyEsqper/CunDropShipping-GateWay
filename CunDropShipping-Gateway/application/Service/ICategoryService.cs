@@ -9,13 +9,13 @@ public interface ICategoryService
     
     Task<List<DomainCategoryEntity>> GetCategoriesByName(string name);
     
-    Task<DomainCategoryEntity> GetCategoryById(int id);
+    Task<DomainCategoryEntity?> GetCategoryById(int id);
     
-    Task<DomainCategoryEntity> CreateCategory(DomainCategoryEntity category);
+    Task<DomainCategoryEntity?> CreateCategory(DomainCategoryEntity category);
     
-    Task<DomainCategoryEntity> UpdateCategory(int id, DomainCategoryEntity category);
+    Task<DomainCategoryEntity?> UpdateCategory(int id, DomainCategoryEntity category);
     
-    Task<DomainCategoryEntity> DeleteCategoryById(int id);
+    Task<DomainCategoryEntity?> DeleteCategoryById(int id);
     
     Task<List<DomainCategoryEntity>> DeleteCategoryByName(string name);
 }
