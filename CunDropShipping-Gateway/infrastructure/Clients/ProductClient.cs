@@ -33,16 +33,9 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
             
             // Console.WriteLine(rawJson); // Comentado por limpieza, reactivar si se necesita debug
 
-            try
-            {
-                var list = JsonSerializer.Deserialize<List<ProductResponse>>(rawJson, _jsonOptions);
-                return list ?? new List<ProductResponse>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Error] {ex.Message}");
-                throw;
-            }
+
+            var list = JsonSerializer.Deserialize<List<ProductResponse>>(rawJson, _jsonOptions);
+            return list ?? new List<ProductResponse>();
         }
 
         public async Task<ProductResponse?> GetProductById(int idProduct)

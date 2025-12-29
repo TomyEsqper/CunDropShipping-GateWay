@@ -96,5 +96,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+// Activacion Middleware de errores global
+app.UseMiddleware<CunDropShipping_Gateway.application.Common.ExceptionMiddleware>();
 app.MapControllers();
 app.Run();

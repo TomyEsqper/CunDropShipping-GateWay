@@ -37,16 +37,11 @@ namespace CunDropShipping_Gateway.domain
 
         public async Task<DomainCategoryEntity?> GetCategoryById(int id)
         {
-            try 
-            {
-                var response = await _client.GetCategoryById(id);
-                return response == null ? null : _mapper.ToDomain(response);
-            }
-            catch (Exception)
-            {
-                // [EDUCATIVO] Si falla el cliente (ej. 404), devolvemos null para que el controlador devuelva NotFound
-                return null;
-            }
+
+            var response = await _client.GetCategoryById(id);
+            return response == null ? null : _mapper.ToDomain(response);
+
+
         }
 
         public async Task<DomainCategoryEntity?> CreateCategory(DomainCategoryEntity category)
@@ -64,43 +59,28 @@ namespace CunDropShipping_Gateway.domain
         {
             var infraRequest = _mapper.ToEntity(category);
             
-            try 
-            {
-                var infraResponse = await _client.UpdateCategory(id, infraRequest);
-                if (infraResponse == null) return null;
-                return _mapper.ToDomain(infraResponse);
-            }
-            catch(Exception)
-            {
-                return null;
-            }
+            var infraResponse = await _client.UpdateCategory(id, infraRequest);
+            if (infraResponse == null) return null;
+            return _mapper.ToDomain(infraResponse);
+
         }
 
         public async Task<DomainCategoryEntity?> DeleteCategoryById(int id)
         {
-            try
-            {
-                var infraResponse = await _client.DeleteCategoryById(id);
-                if (infraResponse == null) return null;
-                return _mapper.ToDomain(infraResponse);
-            }
-            catch(Exception)
-            {
-                return null;
-            }
+
+            var infraResponse = await _client.DeleteCategoryById(id);
+            if (infraResponse == null) return null;
+            return _mapper.ToDomain(infraResponse);
+
+
         }
 
         public async Task<List<DomainCategoryEntity>> DeleteCategoryByName(string name)
         {
-            try
-            {
-                var infraResponseList = await _client.DeleteCategoryByName(name);
-                return _mapper.ToDomainList(infraResponseList);
-            }
-            catch(Exception)
-            {
-                return null;
-            }
+
+            var infraResponseList = await _client.DeleteCategoryByName(name);
+            return _mapper.ToDomainList(infraResponseList);
+
         }
     }
 }
