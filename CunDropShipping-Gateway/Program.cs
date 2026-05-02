@@ -15,13 +15,18 @@ var builder = WebApplication.CreateBuilder(args);
 // ==============================================================
 
 // Lee las URLs de los microservicios desde el archivo de configuración (appsettings.json)
-var productApiUrl = builder.Configuration.GetValue<string>("ServiceUrls:ProductApi");
-var categoryApiUrl = builder.Configuration.GetValue<string>("ServiceUrls:CategoryApi"); 
+var productApiUrl = builder.Configuration.GetValue<string>("ServiceUrls:ProductApi") ?? "http://localhost:5000"; // [EDUCATIVO] Valor por defecto para evitar warnings
+var categoryApiUrl = builder.Configuration.GetValue<string>("ServiceUrls:CategoryApi") ?? "http://localhost:5000"; 
 
 // Agrega los servicios necesarios para MVC (Controllers), Swagger/OpenAPI
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// [EDUCATIVO] Registramos el servicio de Caché en Memoria (IMemoryCache).
+// Esto nos permitirá guardar datos temporalmente en la RAM del servidor
+// para no tener que pedirlos repetidamente a los microservicios.
+builder.Services.AddMemoryCache();
 
 // ==============================================================
 // 2. CLIENTES HTTP (CAPA INFRASTRUCTURE)
@@ -91,5 +96,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
+// Activacion Middleware de errores global
+app.UseMiddleware<CunDropShipping_Gateway.application.Common.ExceptionMiddleware>();
 app.MapControllers();
 app.Run();

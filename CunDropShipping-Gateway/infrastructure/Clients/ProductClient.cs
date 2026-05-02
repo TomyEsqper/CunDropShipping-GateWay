@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Net.Http.Json;
-using CunDropShipping_Gateway.infrastructure.Entity; // Único using de entidades
+using CunDropShipping_Gateway.infrastructure.Entity; 
 
 namespace CunDropShipping_Gateway.infrastructure.Clients
 {
@@ -18,90 +18,84 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
             };
         }
 
-        public List<ProductResponse> GetAllProducts()
+        // [EDUCATIVO] Agregamos 'async' para poder usar 'await' dentro.
+        // El retorno ahora es Task<List<ProductResponse>>.
+        public async Task<List<ProductResponse>> GetAllProducts()
         {
-            // Paso 1: Obtener y loguear el JSON crudo para inspeccionar los nombres de las propiedades
-            var httpResponse = _httpClient.GetAsync("/api/v1/products").Result;
+            // [EDUCATIVO] Eliminamos .Result (que bloquea) y usamos 'await'.
+            // 'await' libera este hilo para que atienda otras peticiones mientras
+            // la respuesta viaja por la red.
+            var httpResponse = await _httpClient.GetAsync("/api/v1/products");
             httpResponse.EnsureSuccessStatusCode();
 
-            var rawJson = httpResponse.Content.ReadAsStringAsync().Result;
-            Console.WriteLine("[DEBUG_LOG][ProductClient.GetAllProducts] Raw JSON payload:");
-            Console.WriteLine(rawJson);
+            // [EDUCATIVO] ReadAsStringAsync también es una operación I/O, así que la esperamos.
+            var rawJson = await httpResponse.Content.ReadAsStringAsync();
+            
+            // Console.WriteLine(rawJson); // Comentado por limpieza, reactivar si se necesita debug
 
-            // Paso 2: Deserializar usando opciones con PropertyNameCaseInsensitive = true
-            try
-            {
-                var list = JsonSerializer.Deserialize<List<ProductResponse>>(rawJson, _jsonOptions);
-                return list ?? new List<ProductResponse>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[DEBUG_LOG][ProductClient.GetAllProducts] Error deserializando respuesta: {ex.Message}");
-                throw;
-            }
+
+            var list = JsonSerializer.Deserialize<List<ProductResponse>>(rawJson, _jsonOptions);
+            return list ?? new List<ProductResponse>();
         }
 
-        public ProductResponse GetProductById(int idProduct)
+        public async Task<ProductResponse?> GetProductById(int idProduct)
         {
-            var response = _httpClient
-                .GetFromJsonAsync<ProductResponse>($"/api/v1/products/{idProduct}", _jsonOptions)
-                .Result;
+            // [EDUCATIVO] GetFromJsonAsync es una joya: hace el Get, valida el status, lee el body
+            // y deserializa, todo optimizado y asíncrono. ¡Mucho más limpio!
+            var response = await _httpClient
+                .GetFromJsonAsync<ProductResponse>($"/api/v1/products/{idProduct}", _jsonOptions);
                 
             return response;
         }
 
-        // ✅ CORREGIDO: Recibe ProductResponse y lo envía como JSON
-        public ProductResponse SaveProduct(ProductResponse product)
+        public async Task<ProductResponse?> SaveProduct(ProductResponse product)
         {
-            // Enviamos el objeto 'ProductResponse' tal cual
-            var response = _httpClient.PostAsJsonAsync("/api/v1/products", product).Result;
+            // [EDUCATIVO] PostAsJsonAsync envía el objeto serializado de forma asíncrona.
+            var response = await _httpClient.PostAsJsonAsync("/api/v1/products", product);
             
             response.EnsureSuccessStatusCode(); 
 
-            return response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions).Result;
+            // [EDUCATIVO] Leemos la respuesta (el producto creado) asíncronamente.
+            return await response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions);
         }
 
-        // ✅ CORREGIDO: Recibe ProductResponse y lo envía como JSON
-        public ProductResponse UpdateProduct(int idProduct, ProductResponse product)
+        public async Task<ProductResponse?> UpdateProduct(int idProduct, ProductResponse product)
         {
-            var response = _httpClient.PutAsJsonAsync($"/api/v1/products/{idProduct}", product).Result;
+            var response = await _httpClient.PutAsJsonAsync($"/api/v1/products/{idProduct}", product);
             
             response.EnsureSuccessStatusCode();
 
-            return response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions).Result;
+            return await response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions);
         }
 
-        public ProductResponse DeleteProduct(int idProduct)
+        public async Task<ProductResponse?> DeleteProduct(int idProduct)
         {
-            var response = _httpClient.DeleteAsync($"/api/v1/products/{idProduct}").Result;
+            var response = await _httpClient.DeleteAsync($"/api/v1/products/{idProduct}");
             
             response.EnsureSuccessStatusCode();
 
-            return response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions).Result;
+            return await response.Content.ReadFromJsonAsync<ProductResponse>(_jsonOptions);
         }
 
-        public List<ProductResponse> SearchProductsByName(string searchTerm)
+        public async Task<List<ProductResponse>> SearchProductsByName(string searchTerm)
         {
-            var response = _httpClient
-                .GetFromJsonAsync<List<ProductResponse>>($"/api/v1/products/search?searchTerm={searchTerm}", _jsonOptions)
-                .Result;
+            var response = await _httpClient
+                .GetFromJsonAsync<List<ProductResponse>>($"/api/v1/products/search?searchTerm={searchTerm}", _jsonOptions);
 
             return response ?? new List<ProductResponse>();
         }
 
-        public List<ProductResponse> GetProductsByPriceRange(decimal minPrice, decimal maxPrice)
+        public async Task<List<ProductResponse>> GetProductsByPriceRange(decimal minPrice, decimal maxPrice)
         {
-            return _httpClient
+            return await _httpClient
                 .GetFromJsonAsync<List<ProductResponse>>(
-                    $"/api/v1/products/filter/price?minPrice={minPrice}&maxPrice={maxPrice}", _jsonOptions)
-                .Result;
+                    $"/api/v1/products/filter/price?minPrice={minPrice}&maxPrice={maxPrice}", _jsonOptions);
         }
 
-        public List<ProductResponse> GetProductsWithLowStock(int stockThreshold)
+        public async Task<List<ProductResponse>> GetProductsWithLowStock(int stockThreshold)
         {
-            var response = _httpClient
-                .GetFromJsonAsync<List<ProductResponse>>($"/api/v1/products/filter/stock?stockThreshold={stockThreshold}", _jsonOptions)
-                .Result;
+            var response = await _httpClient
+                .GetFromJsonAsync<List<ProductResponse>>($"/api/v1/products/filter/stock?stockThreshold={stockThreshold}", _jsonOptions);
 
             return response ?? new List<ProductResponse>();
         }

@@ -21,40 +21,42 @@ namespace CunDropShipping_Gateway.adapter.restful.v1.Controller
         }
         
         [HttpGet]
-        public ActionResult<List<ProductDto>> GetAllProducts()
+        // [EDUCATIVO] Cambiamos a 'async Task<ActionResult<...>>'.
+        // Esto le dice al servidor web (Kestrel): "Libera el hilo mientras proceso esto".
+        public async Task<ActionResult<List<ProductDto>>> GetAllProducts()
         {
-            var domainProducts = _service.GetAllProducts();
+            // [EDUCATIVO] 'await' aquí es crucial. Si usaras .Result aquí, 
+            // anularías todo el trabajo previo y volverías a bloquear.
+            var domainProducts = await _service.GetAllProducts();
             return Ok(_mapper.ToEntityList(domainProducts)); 
         }
 
         [HttpGet("{idProduct}")]
-        public ActionResult<ProductDto> GetProductById(int idProduct)
+        public async Task<ActionResult<ProductDto>> GetProductById(int idProduct)
         {
-            var product = _service.GetProductById(idProduct);
+            var product = await _service.GetProductById(idProduct);
+            
             if (product == null) return NotFound();
-            // ✅ Usamos el mapper inyectado: ToEntity
+            
             return Ok(_mapper.ToEntity(product));
         }
 
         [HttpPost]
-        public ActionResult<ProductDto> CreateProduct([FromBody] ProductDto productDto)
+        public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] ProductDto productDto)
         {
-            // 1. DTO -> Domain: Usamos el mapper: ToDomain
             var domainEntity = _mapper.ToDomain(productDto);
             
-            // 2. Guardar
-            var savedProduct = _service.SaveProduct(domainEntity);
+            var savedProduct = await _service.SaveProduct(domainEntity);
             
-            // 3. Domain -> DTO: Usamos el mapper: ToEntity
             return Ok(_mapper.ToEntity(savedProduct));
         }
 
         [HttpPut("{idProduct}")]
-        public ActionResult<ProductDto> UpdateProduct(int idProduct, [FromBody] ProductDto productDto)
+        public async Task<ActionResult<ProductDto>> UpdateProduct(int idProduct, [FromBody] ProductDto productDto)
         {
             var domainEntity = _mapper.ToDomain(productDto);
             
-            var updatedProduct = _service.UpdateProduct(idProduct, domainEntity);
+            var updatedProduct = await _service.UpdateProduct(idProduct, domainEntity);
             
             if (updatedProduct == null) return NotFound();
             
@@ -62,31 +64,31 @@ namespace CunDropShipping_Gateway.adapter.restful.v1.Controller
         }
 
         [HttpDelete("{idProduct}")]
-        public ActionResult<ProductDto> DeleteProduct(int idProduct)
+        public async Task<ActionResult<ProductDto>> DeleteProduct(int idProduct)
         {
-            var deletedProduct = _service.DeleteProduct(idProduct);
+            var deletedProduct = await _service.DeleteProduct(idProduct);
             if (deletedProduct == null) return NotFound();
             return Ok(_mapper.ToEntity(deletedProduct));
         }
 
         [HttpGet("search")]
-        public ActionResult<List<ProductDto>> SearchProductsByName([FromQuery] string searchTerm)
+        public async Task<ActionResult<List<ProductDto>>> SearchProductsByName([FromQuery] string searchTerm)
         {
-            var products = _service.SearchProductsByName(searchTerm);
+            var products = await _service.SearchProductsByName(searchTerm);
             return Ok(_mapper.ToEntityList(products));
         }
 
         [HttpGet("filter/price")]
-        public ActionResult<List<ProductDto>> GetProductsByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal max)
+        public async Task<ActionResult<List<ProductDto>>> GetProductsByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal max)
         {
-            var products = _service.GetProductsByPriceRange(minPrice, max);
+            var products = await _service.GetProductsByPriceRange(minPrice, max);
             return Ok(_mapper.ToEntityList(products));
         }
 
         [HttpGet("filter/stock")]
-        public ActionResult<List<ProductDto>> GetProductsWithLowStock([FromQuery] int stockThreshold)
+        public async Task<ActionResult<List<ProductDto>>> GetProductsWithLowStock([FromQuery] int stockThreshold)
         {
-            var products = _service.GetProductsWithLowStock(stockThreshold);
+            var products = await _service.GetProductsWithLowStock(stockThreshold);
             return Ok(_mapper.ToEntityList(products));
         }
     }

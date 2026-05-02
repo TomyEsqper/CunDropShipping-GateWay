@@ -9,10 +9,7 @@ namespace CunDropShipping_Gateway.domain
     public class CategoryServiceImp : ICategoryService
     {
         private readonly ICategoryClient _client;
-        
-        // Inyección genérica: "Necesito un mapper que traduzca entre DomainCategoryEntity y CategoryResponse"
         private readonly IMapper<DomainCategoryEntity, CategoryResponse> _mapper;
-        private ICategoryService _categoryServiceImplementation;
 
         public CategoryServiceImp(ICategoryClient client, IMapper<DomainCategoryEntity, CategoryResponse> mapper)
         {
@@ -20,79 +17,70 @@ namespace CunDropShipping_Gateway.domain
             _mapper = mapper;
         }
 
-        public List<DomainCategoryEntity> GetAllCategories()    
+        public async Task<List<DomainCategoryEntity>> GetAllCategories()    
         {
-            var infraList = _client.GetAllCategories();
+            // [EDUCATIVO] CORRECTO: Primero esperamos (await) a tener la lista de infra...
+            var infraList = await _client.GetAllCategories();
+            
+            // ... y LUEGO la mapeamos. El mapper trabaja con objetos reales, no con Tasks.
             return _mapper.ToDomainList(infraList);
         }
 
-        public List<DomainCategoryEntity>? GetCategoriesByName(string name)
+        public async Task<List<DomainCategoryEntity>> GetCategoriesByName(string name)
         {
-            var infraList = _client.GetCategoriesByName(name);
-            // Si la infraestructura devuelve null, devolvemos null o lista vacía según prefieras.
-            // El mapper ToDomainList maneja null devolviendo lista vacía, pero si quieres ser explícito con el null:
-            if (infraList == null) return null;
+            var infraList = await _client.GetCategoriesByName(name);
+            
+            if (infraList == null) return new List<DomainCategoryEntity>();
             
             return _mapper.ToDomainList(infraList);
         }
 
-        public DomainCategoryEntity? GetCategoryById(int id)
+        public async Task<DomainCategoryEntity?> GetCategoryById(int id)
         {
-            var response = _client.GetCategoryById(id);
+
+            var response = await _client.GetCategoryById(id);
             return response == null ? null : _mapper.ToDomain(response);
+
+
         }
 
-        public DomainCategoryEntity CreateCategory(DomainCategoryEntity category)
+        public async Task<DomainCategoryEntity?> CreateCategory(DomainCategoryEntity category)
         {
-            // 1. Convertir Dominio -> Infra (Para enviar)
             var infraRequest = _mapper.ToEntity(category);
             
-            // 2. Llamar al API externo
-            var infraResponse = _client.CreateCategory(infraRequest);
+            var infraResponse = await _client.CreateCategory(infraRequest);
 
-            // 3. Convertir Infra -> Dominio (Para devolver)
+            if (infraResponse == null) return null;
+
             return _mapper.ToDomain(infraResponse);
         }
 
-        // --- MÉTODOS COMPLETADOS ---
-
-        public DomainCategoryEntity? UpdateCategory(int id, DomainCategoryEntity category)
+        public async Task<DomainCategoryEntity?> UpdateCategory(int id, DomainCategoryEntity category)
         {
-            // 1. Convertir el objeto de dominio a DTO de infraestructura
             var infraRequest = _mapper.ToEntity(category);
             
-            // 2. Intentar actualizar en el microservicio
-            var infraResponse = _client.UpdateCategory(id, infraRequest);
-
-            // 3. Si infra devuelve null (no encontrado), devolvemos null
+            var infraResponse = await _client.UpdateCategory(id, infraRequest);
             if (infraResponse == null) return null;
-
-            // 4. Traducir la respuesta y devolverla
             return _mapper.ToDomain(infraResponse);
+
         }
 
-        public DomainCategoryEntity? DeleteCategoryById(int id)
+        public async Task<DomainCategoryEntity?> DeleteCategoryById(int id)
         {
-            // 1. Llamar al borrado en el cliente
-            var infraResponse = _client.DeleteCategoryById(id);
-            
-            // 2. Validar si existía
-            if (infraResponse == null) return null;
 
-            // 3. Devolver el objeto borrado traducido
+            var infraResponse = await _client.DeleteCategoryById(id);
+            if (infraResponse == null) return null;
             return _mapper.ToDomain(infraResponse);
+
+
         }
 
-        public List<DomainCategoryEntity>? DeleteCategoryByName(string name)
+        public async Task<List<DomainCategoryEntity>> DeleteCategoryByName(string name)
         {
-            // 1. Llamar al borrado por nombre
-            var infraResponseList = _client.DeleteCategoryByName(name);
-            
-            // 2. Validar
-            if (infraResponseList == null) return null;
 
-            // 3. Devolver la lista de objetos borrados traducida
+            var infraResponseList = await _client.DeleteCategoryByName(name);
             return _mapper.ToDomainList(infraResponseList);
+
         }
     }
 }
