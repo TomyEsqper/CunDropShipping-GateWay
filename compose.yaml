@@ -1,0 +1,7 @@
+﻿services:
+  cundropshipping-gateway:
+    image: cundropshipping-gateway
+    build:
+      context: .
+      dockerfile: CunDropShipping-Gateway/Dockerfile
+
