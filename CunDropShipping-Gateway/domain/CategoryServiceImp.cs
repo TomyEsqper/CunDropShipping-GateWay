@@ -12,6 +12,7 @@ namespace CunDropShipping_Gateway.domain
         
         // Inyección genérica: "Necesito un mapper que traduzca entre DomainCategoryEntity y CategoryResponse"
         private readonly IMapper<DomainCategoryEntity, CategoryResponse> _mapper;
+        private ICategoryService _categoryServiceImplementation;
 
         public CategoryServiceImp(ICategoryClient client, IMapper<DomainCategoryEntity, CategoryResponse> mapper)
         {
@@ -33,6 +34,12 @@ namespace CunDropShipping_Gateway.domain
             if (infraList == null) return null;
             
             return _mapper.ToDomainList(infraList);
+        }
+
+        public DomainCategoryEntity? GetCategoryById(int id)
+        {
+            var response = _client.GetCategoryById(id);
+            return response == null ? null : _mapper.ToDomain(response);
         }
 
         public DomainCategoryEntity CreateCategory(DomainCategoryEntity category)

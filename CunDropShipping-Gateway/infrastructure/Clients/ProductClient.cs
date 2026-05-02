@@ -20,11 +20,25 @@ namespace CunDropShipping_Gateway.infrastructure.Clients
 
         public List<ProductResponse> GetAllProducts()
         {
-            var response = _httpClient
-                .GetFromJsonAsync<List<ProductResponse>>("/api/v1/products", _jsonOptions)
-                .Result;
+            // Paso 1: Obtener y loguear el JSON crudo para inspeccionar los nombres de las propiedades
+            var httpResponse = _httpClient.GetAsync("/api/v1/products").Result;
+            httpResponse.EnsureSuccessStatusCode();
 
-            return response ?? new List<ProductResponse>();
+            var rawJson = httpResponse.Content.ReadAsStringAsync().Result;
+            Console.WriteLine("[DEBUG_LOG][ProductClient.GetAllProducts] Raw JSON payload:");
+            Console.WriteLine(rawJson);
+
+            // Paso 2: Deserializar usando opciones con PropertyNameCaseInsensitive = true
+            try
+            {
+                var list = JsonSerializer.Deserialize<List<ProductResponse>>(rawJson, _jsonOptions);
+                return list ?? new List<ProductResponse>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DEBUG_LOG][ProductClient.GetAllProducts] Error deserializando respuesta: {ex.Message}");
+                throw;
+            }
         }
 
         public ProductResponse GetProductById(int idProduct)

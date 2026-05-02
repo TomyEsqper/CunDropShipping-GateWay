@@ -5,6 +5,7 @@ public interface ICategoryService
 {
     List<DomainCategoryEntity> GetAllCategories();
     List<DomainCategoryEntity>? GetCategoriesByName(string name);
+    DomainCategoryEntity? GetCategoryById(int id);
     DomainCategoryEntity CreateCategory(DomainCategoryEntity category);
     DomainCategoryEntity? UpdateCategory(int id, DomainCategoryEntity category);
     DomainCategoryEntity? DeleteCategoryById(int id);
