@@ -1,12 +1,5 @@
-using CunDropShipping_Gateway.application.Common;
-using CunDropShipping_Gateway.application.Service;
-using CunDropShipping_Gateway.domain;
-using CunDropShipping_Gateway.domain.Entity;
 using CunDropShipping_Gateway.infrastructure.Clients;
-using CunDropShipping_Gateway.infrastructure.Entity;
-using CunDropShipping_Gateway.infrastructure.Mapper;
-using CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity; 
-using CunDropShipping_Gateway.adapter.restful.v1.Controller.Mapper; 
+using CunDropShipping_Gateway.application.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,71 +7,35 @@ var builder = WebApplication.CreateBuilder(args);
 // 1. CONFIGURACIÓN DE AMBIENTE Y HERRAMIENTAS
 // ==============================================================
 
-// Lee las URLs de los microservicios desde el archivo de configuración (appsettings.json)
-var productApiUrl = builder.Configuration.GetValue<string>("ServiceUrls:ProductApi") ?? "http://localhost:5000"; // [EDUCATIVO] Valor por defecto para evitar warnings
-var categoryApiUrl = builder.Configuration.GetValue<string>("ServiceUrls:CategoryApi") ?? "http://localhost:5000"; 
+var catalogApiUrl =
+    builder.Configuration.GetValue<string>("ServiceUrls:CatalogApi") ??
+    builder.Configuration.GetValue<string>("ServiceUrls:ProductApi") ??
+    builder.Configuration.GetValue<string>("ServiceUrls:CategoryApi") ??
+    "http://localhost:5227";
 
-// Agrega los servicios necesarios para MVC (Controllers), Swagger/OpenAPI
+var cartApiUrl =
+    builder.Configuration.GetValue<string>("ServiceUrls:CartApi") ??
+    "http://localhost:5153";
+
+var userApiUrl =
+    builder.Configuration.GetValue<string>("ServiceUrls:UserApi") ??
+    "http://localhost:5193";
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// [EDUCATIVO] Registramos el servicio de Caché en Memoria (IMemoryCache).
-// Esto nos permitirá guardar datos temporalmente en la RAM del servidor
-// para no tener que pedirlos repetidamente a los microservicios.
-builder.Services.AddMemoryCache();
-
-// ==============================================================
-// 2. CLIENTES HTTP (CAPA INFRASTRUCTURE)
-// ==============================================================
-// Registra los clientes HTTP para los microservicios.
-// El contenedor de DI inyectará automáticamente el HttpClient configurado
-// con la BaseAddress.
-
-builder.Services.AddHttpClient<IProductClient, ProductClient>(client =>
+builder.Services.AddHttpClient<ICatalogGatewayClient, CatalogGatewayClient>(client =>
 {
-    client.BaseAddress = new Uri(productApiUrl);
+    client.BaseAddress = new Uri(catalogApiUrl);
 });
-
-builder.Services.AddHttpClient<ICategoryClient, CategoryClient>(client =>
+builder.Services.AddHttpClient<ICartGatewayClient, CartGatewayClient>(client =>
 {
-    client.BaseAddress = new Uri(categoryApiUrl);
+    client.BaseAddress = new Uri(cartApiUrl);
 });
-
-// ==============================================================
-// 3. SERVICIOS (CAPA DOMAIN/APPLICATION)
-// ==============================================================
-// Registra las implementaciones de los servicios bajo sus interfaces de contrato.
-// Estos servicios contienen la lógica de orquestación del Gateway.
-
-builder.Services.AddScoped<IProductService, ProductServiceImp>(); 
-builder.Services.AddScoped<ICategoryService, CategoryServiceImp>();
-builder.Services.AddScoped<IDomainValidatorService, DomainValidatorService>();
-
-// ==============================================================
-// 4. MAPPERS (TRADUCTORES GENÉRICOS: IMapper<TIn, TOut>)
-// ==============================================================
-// Registra las implementaciones concretas para la interfaz genérica IMapper<TIn, TOut>.
-// Es CRÍTICO que todas las implementaciones necesarias para construir los servicios
-// (Service y Controller) estén presentes aquí.
-
-// --- Flujo de CATEGORIES ---
-// 4.1. Mapper Infraestructura (Domain <-> Infrastructure Response)
-builder.Services.AddScoped<IMapper<DomainCategoryEntity, CategoryResponse>, CategoryInfrastructureMapper>();
-
-// 4.2. Mapper Adapter (Domain <-> Adapter Dto)
-builder.Services.AddScoped<IMapper<DomainCategoryEntity, CategoryDto>, CategoryAdapterMapper>();
-
-
-// --- Flujo de PRODUCTS (La Corrección del Error) ---
-// 4.3. Mapper Infraestructura (Domain <-> Product Response)
-// Registra el mapper que el ProductServiceImp necesita para construir su constructor.
-// Esto soluciona el error "Unable to resolve service" que estaba ocurriendo.
-builder.Services.AddScoped<IMapper<DomainProductEntity, ProductResponse>, ProductInfrastructureMapper>();
-
-// 4.4. Mapper Adapter (Domain <-> Adapter Dto)
-// Registra el mapper que el ProductController necesita para serializar la respuesta.
-builder.Services.AddScoped<IMapper<DomainProductEntity, ProductDto>, ProductAdapterMapper>();
+builder.Services.AddHttpClient<IUserGatewayClient, UserGatewayClient>(client =>
+{
+    client.BaseAddress = new Uri(userApiUrl);
+});
 
 
 var app = builder.Build();
@@ -100,3 +57,5 @@ app.UseAuthorization();
 app.UseMiddleware<CunDropShipping_Gateway.application.Common.ExceptionMiddleware>();
 app.MapControllers();
 app.Run();
+
+public partial class Program { }
