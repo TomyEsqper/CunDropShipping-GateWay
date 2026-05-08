@@ -48,6 +48,7 @@ builder.Services.AddHttpClient<IPaymentGatewayClient, PaymentGatewayClient>(clie
 {
     client.BaseAddress = new Uri(salesApiUrl);
 });
+builder.Services.AddScoped<GatewayValidationService>();
 
 var app = builder.Build();
 

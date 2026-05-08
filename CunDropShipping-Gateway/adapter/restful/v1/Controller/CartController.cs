@@ -1,5 +1,6 @@
 using CunDropShipping_Gateway.infrastructure.Clients;
 using CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity;
+using CunDropShipping_Gateway.application.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CunDropShipping_Gateway.adapter.restful.v1.Controller;
@@ -9,10 +10,12 @@ namespace CunDropShipping_Gateway.adapter.restful.v1.Controller;
 public class CartController : ControllerBase
 {
     private readonly ICartGatewayClient _cartClient;
+    private readonly GatewayValidationService _validator;
 
-    public CartController(ICartGatewayClient cartClient)
+    public CartController(ICartGatewayClient cartClient, GatewayValidationService validator)
     {
         _cartClient = cartClient;
+        _validator = validator;
     }
 
     [HttpGet("{userId:guid}")]
@@ -26,9 +29,13 @@ public class CartController : ControllerBase
     [HttpPost]
     public Task<IActionResult> Create([FromBody] CreateShoppingCartRequest request, CancellationToken cancellationToken)
     {
-        return GatewayResultFactory.CreateAsync(
-            this,
-            _cartClient.PostAsync("/carts", request, cancellationToken));
+        return CreateValidatedAsync(request, cancellationToken);
+    }
+
+    private async Task<IActionResult> CreateValidatedAsync(CreateShoppingCartRequest request, CancellationToken cancellationToken)
+    {
+        await _validator.EnsureUserExistsAsync(request.BuyerId, cancellationToken);
+        return await GatewayResultFactory.CreateAsync(this, _cartClient.PostAsync("/carts", request, cancellationToken));
     }
 
     [HttpDelete("{cartId:guid}")]
