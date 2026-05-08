@@ -1,4 +1,5 @@
 using CunDropShipping_Gateway.infrastructure.Clients;
+using CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CunDropShipping_Gateway.adapter.restful.v1.Controller;
@@ -15,11 +16,11 @@ public class PaymentController : ControllerBase
     }
 
     [HttpPost("process")]
-    public Task<IActionResult> ProcessPayment(CancellationToken cancellationToken)
+    public Task<IActionResult> ProcessPayment([FromBody] AdapterPaymentEntity request, CancellationToken cancellationToken)
     {
         return GatewayResultFactory.CreateAsync(
             this,
-            _paymentClient.PostAsync("/api/v1/payments/process", Request, cancellationToken));
+            _paymentClient.PostAsync("/api/v1/payments/process", request, cancellationToken));
     }
 
     [HttpGet("{id:guid}")]

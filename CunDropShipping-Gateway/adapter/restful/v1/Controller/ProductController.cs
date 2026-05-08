@@ -1,4 +1,5 @@
 using CunDropShipping_Gateway.infrastructure.Clients;
+using CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CunDropShipping_Gateway.adapter.restful.v1.Controller;
@@ -31,7 +32,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public Task<IActionResult> Create(CancellationToken cancellationToken)
+    public Task<IActionResult> Create([FromBody] ProductDto request, CancellationToken cancellationToken)
     {
         return GatewayResultFactory.CreateAsync(
             this,
@@ -39,7 +40,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public Task<IActionResult> Update(int id, CancellationToken cancellationToken)
+    public Task<IActionResult> Update(int id, [FromBody] ProductDto request, CancellationToken cancellationToken)
     {
         return GatewayResultFactory.CreateAsync(
             this,

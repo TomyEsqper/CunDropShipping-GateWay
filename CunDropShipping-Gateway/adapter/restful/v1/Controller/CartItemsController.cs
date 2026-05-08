@@ -1,4 +1,5 @@
 using CunDropShipping_Gateway.infrastructure.Clients;
+using CunDropShipping_Gateway.adapter.restful.v1.Controller.Entity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CunDropShipping_Gateway.adapter.restful.v1.Controller;
@@ -15,19 +16,19 @@ public class CartItemsController : ControllerBase
     }
 
     [HttpPost]
-    public Task<IActionResult> AddOrUpdateItem(CancellationToken cancellationToken)
+    public Task<IActionResult> AddOrUpdateItem([FromBody] UpsertCartItemRequest request, CancellationToken cancellationToken)
     {
         return GatewayResultFactory.CreateAsync(
             this,
-            _cartClient.PostAsync("/cart-items", Request, cancellationToken));
+            _cartClient.PostAsync("/cart-items", request, cancellationToken));
     }
 
     [HttpPatch("{cartId:guid}/{productId}")]
-    public Task<IActionResult> UpdateItemQuantity(Guid cartId, int productId, CancellationToken cancellationToken)
+    public Task<IActionResult> UpdateItemQuantity(Guid cartId, int productId, [FromBody] UpdateCartItemQuantityRequest request, CancellationToken cancellationToken)
     {
         return GatewayResultFactory.CreateAsync(
             this,
-            _cartClient.PatchAsync($"/cart-items/{cartId}/{productId}", Request, cancellationToken));
+            _cartClient.PatchAsync($"/cart-items/{cartId}/{productId}", request, cancellationToken));
     }
 
     [HttpDelete("{cartId:guid}/{productId}")]
