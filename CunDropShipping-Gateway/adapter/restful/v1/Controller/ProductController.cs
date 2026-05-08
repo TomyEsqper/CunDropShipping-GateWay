@@ -22,11 +22,59 @@ public class ProductController : ControllerBase
             _catalogClient.GetAsync("/api/v1/products", cancellationToken));
     }
 
+    [HttpGet("{id}")]
+    public Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.GetAsync($"/api/v1/products/{id}", cancellationToken));
+    }
+
     [HttpPost]
     public Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         return GatewayResultFactory.CreateAsync(
             this,
             _catalogClient.PostAsync("/api/v1/products", Request, cancellationToken));
+    }
+
+    [HttpPut("{id}")]
+    public Task<IActionResult> Update(int id, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.PutAsync($"/api/v1/products/{id}", Request, cancellationToken));
+    }
+
+    [HttpDelete("{id}")]
+    public Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.DeleteAsync($"/api/v1/products/{id}", cancellationToken));
+    }
+
+    [HttpGet("search")]
+    public Task<IActionResult> Search([FromQuery] string searchTerm, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.GetAsync($"/api/v1/products/search?searchTerm={Uri.EscapeDataString(searchTerm)}", cancellationToken));
+    }
+
+    [HttpGet("filter/price")]
+    public Task<IActionResult> FilterByPrice([FromQuery] decimal min, [FromQuery] decimal max, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.GetAsync($"/api/v1/products/filter/price?min={min}&max={max}", cancellationToken));
+    }
+
+    [HttpGet("filter/stock")]
+    public Task<IActionResult> GetLowStock([FromQuery] int threshold, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.GetAsync($"/api/v1/products/filter/stock?threshold={threshold}", cancellationToken));
     }
 }

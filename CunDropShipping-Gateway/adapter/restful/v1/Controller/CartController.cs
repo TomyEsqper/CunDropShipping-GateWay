@@ -29,4 +29,12 @@ public class CartController : ControllerBase
             this,
             _cartClient.PostAsync("/carts", Request, cancellationToken));
     }
+
+    [HttpDelete("{cartId:guid}")]
+    public Task<IActionResult> Delete(Guid cartId, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _cartClient.DeleteAsync($"/carts/{cartId}", cancellationToken));
+    }
 }

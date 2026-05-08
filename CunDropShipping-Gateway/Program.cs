@@ -21,6 +21,10 @@ var userApiUrl =
     builder.Configuration.GetValue<string>("ServiceUrls:UserApi") ??
     "http://localhost:5193";
 
+var salesApiUrl =
+    builder.Configuration.GetValue<string>("ServiceUrls:SalesApi") ??
+    "http://localhost:5092";
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -36,7 +40,14 @@ builder.Services.AddHttpClient<IUserGatewayClient, UserGatewayClient>(client =>
 {
     client.BaseAddress = new Uri(userApiUrl);
 });
-
+builder.Services.AddHttpClient<IOrderGatewayClient, OrderGatewayClient>(client =>
+{
+    client.BaseAddress = new Uri(salesApiUrl);
+});
+builder.Services.AddHttpClient<IPaymentGatewayClient, PaymentGatewayClient>(client =>
+{
+    client.BaseAddress = new Uri(salesApiUrl);
+});
 
 var app = builder.Build();
 

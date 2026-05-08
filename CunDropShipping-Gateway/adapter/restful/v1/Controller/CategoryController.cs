@@ -22,11 +22,35 @@ public class CategoryController : ControllerBase
             _catalogClient.GetAsync("/api/v1/categories", cancellationToken));
     }
 
+    [HttpGet("{id}")]
+    public Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.GetAsync($"/api/v1/categories/{id}", cancellationToken));
+    }
+
     [HttpPost]
     public Task<IActionResult> Create(CancellationToken cancellationToken)
     {
         return GatewayResultFactory.CreateAsync(
             this,
             _catalogClient.PostAsync("/api/v1/categories", Request, cancellationToken));
+    }
+
+    [HttpPut("{id}")]
+    public Task<IActionResult> Update(int id, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.PutAsync($"/api/v1/categories/{id}", Request, cancellationToken));
+    }
+
+    [HttpDelete("{id}")]
+    public Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    {
+        return GatewayResultFactory.CreateAsync(
+            this,
+            _catalogClient.DeleteAsync($"/api/v1/categories/{id}", cancellationToken));
     }
 }
